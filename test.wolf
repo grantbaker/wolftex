@@ -1,3 +1,5 @@
-Expand[(x + y + z)*(x + y + z)]
+Expand[(x + y + z) * (x + y + z)]
 y=5
 z=10
+Simplify[(x + y + z) * (x + y + z)]
+Expand[(x + y + z) * (x + y + z)]

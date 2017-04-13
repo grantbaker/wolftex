@@ -14,6 +14,7 @@ if [ ! -f "$wolf_path" ]; then
 fi
 
 echo "\"Grant Baker\"//TeXForm" > tmp.wolf
+echo "\"Grant Baker\"" > find.tmp
 
 while IFS='' read -r line || [[ -n "$line" ]]; do
 	echo "$line" >> find.tmp
@@ -30,17 +31,38 @@ echo "\\begin{document}" >> out.tex
 
 echo $1
 
+texform="//TeXForm"
+
 while IFS='' read -r line || [[ -n "$line" ]]; do
 	if [[ $line == In* ]]; then
 		read -r command < find.tmp
 		tail -n +2 find.tmp > find.tmp.tmp
 		mv find.tmp.tmp find.tmp
-		echo "{\tt $line $command}" >> out.tex
+		echo "\\begin{verbatim}" >> out.tex
+		echo "$line $command" >> out.tex
+		echo "\\end{verbatim}" >> out.tex
+		echo "" >> out.tex
+	elif [[ $line == Out* ]]; then
+		# outside=$(sed 's///TeXForm.*//' <<< "$line")
+		outside=${line%$texform*}
+		outside="${outside}="
+		math=${line#*$texform=}
+
+		echo "\\begin{verbatim}" >> out.tex
+		echo "${outside}" >> out.tex
+		echo "\\end{verbatim}" >> out.tex
+		echo "\[${math}\]" >> out.tex
+		echo "\\\\" >> out.tex
 		echo "" >> out.tex
 	fi
 done < tmp2.wolf
 
 echo "\\end{document}" >> out.tex
 
-latex out.tex
+latex out.tex >> /dev/null
+# latex out.tex
 dvipdfm -q out.dvi
+
+# mv out.pdf tmp.out.pdf
+# rm out.* *.tmp tmp2.wolf
+# mv tmp.out.pdf out.pdf
